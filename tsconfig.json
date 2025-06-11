@@ -16,6 +16,20 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@database/*": [
+        "./src/database/*"
+      ],
+      "@interfaces/*": [
+        "./src/interfaces/*"
+      ],
+      "@enums/*": [
+        "./src/enums/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ]
+    }
   }
 }

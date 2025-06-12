@@ -33,3 +33,41 @@
   "id": "1ffc4f94-e71f-4218-b353-eb4ff5c2b592",
   "role": "ADMIN"
 }
+
+{
+  "name": "MEMORA",
+  "email": "memora@exemplo.com",
+  "isActive": true,
+  "contact": "(56) 91234-5678",
+  "imageUrl": "https://memora.com/memora.jpg",
+  "address": {
+    "street": "Rua memora",
+    "neighborhood": "memora",
+    "number": "41",
+    "state": "BA"
+  }
+}
+
+
+
+[Nest] 157216  - 06/12/2025, 5:12:42 PM     LOG [NestApplication] Nest application successfully started +49ms
+VALOR CRIADO EM CREATE COSTUMER SERVICE {
+  id: 'd6cfbf9a-c329-4adc-b5be-32a7c50a7eef',
+  tenantId: '420cb1ae-fb2a-433c-8592-b1a2ec2edb4d',
+  publicId: 'CL-2025-0002',
+  name: 'MEMORA',
+  email: 'memora@exemplo.com',
+  isActive: true,
+  contact: '(56) 91234-5678',
+  imageUrl: 'https://memora.com/memora.jpg',
+  createdAt: 2025-06-12T20:12:59.782Z,
+  updatedAt: 2025-06-12T20:12:59.782Z,
+  address: {
+    id: 'bdada15c-0ee4-49f5-b019-16747f0afc48',
+    street: 'Rua memora',
+    neighborhood: 'memora',
+    number: '41',
+    state: 'BA',
+    clienteId: 'd6cfbf9a-c329-4adc-b5be-32a7c50a7eef'
+  }
+}

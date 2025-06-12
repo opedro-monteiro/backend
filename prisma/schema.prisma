@@ -23,7 +23,7 @@ model Cliente {
   isActive    Boolean  @default(true)
   contact     String
   imageUrl    String?
-  address     Address?
+  address     Endereco?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -45,7 +45,7 @@ model Usuario {
   @@index([tenantId])
 }
 
-model Address {
+model Endereco {
   id           String   @id @default(uuid())
   street       String
   neighborhood String

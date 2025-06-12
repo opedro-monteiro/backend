@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { IEncrypter } from '@interfaces/cryptography/bcrypt/encrypter.interface';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Usuario } from '@prisma/client';
 import { compareSync } from 'bcrypt';
 import { LoginService } from '../login/login.service';
+import { LoginUserDto } from './dto/login-user.dto';
 import { UserPayload } from './models/UserPayload';
 import { UserToken } from './models/UserToken';
 
@@ -12,38 +14,37 @@ export class AuthService {
   constructor(
     private readonly loginService: LoginService,
     private readonly jwtService: JwtService,
+    private readonly encrypter: IEncrypter,
   ) { }
 
-  async login(usuarioArg: Usuario): Promise<UserToken> {
+  async login(usuarioArg: LoginUserDto): Promise<UserToken> {
+    const user = await this.validateUser(usuarioArg.email, usuarioArg.password);
+    
     const payload: UserPayload = {
-      id: usuarioArg.id,
-      role: usuarioArg.role,
+      id: user.id,
+      role: user.role,
+      email: user.email,
+      tenantId: user.tenantId,
     };
 
     const token: string = this.jwtService.sign(payload);
-    const usuario = await this.loginService.findByEmail(usuarioArg.email);
 
-    if (!usuario) {
-      throw new Error('Usuário não encontrado.');
-    }
-
-    return { token, id: usuario.id, role: usuario.role };
+    return { token, id: user.id, role: user.role };
   }
 
   async validateUser(email: string, password: string): Promise<Usuario> {
     const usuario = await this.loginService.findByEmail(email);
 
-    if (usuario) {
-      const isPasswordValid: boolean = compareSync(password, usuario.password);
+    if (!usuario) throw new NotFoundException('Usuário não encontrado.');
 
-      if (isPasswordValid) {
-        return {
-          ...usuario,
-          password: "", // Não retornar a senha
-        }
-      }
+    const isPasswordValid: boolean = await this.encrypter.compare(password, usuario.password);
+
+    if (!isPasswordValid) throw new UnauthorizedException("Senha inválida.");
+
+    return {
+      ...usuario,
+      password: "", // Não retornar a senha
     }
-
-    throw new Error('Acesso não autorizado.');
   }
+
 }

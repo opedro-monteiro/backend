@@ -6,6 +6,6 @@ export class LoginService {
   constructor(private prisma: PrismaService) { }
 
   async findByEmail(email: string) {
-    return this.prisma.usuario.findUnique({ where: { email } }); // incluir permissoes
+    return this.prisma.usuario.findUnique({ where: { email } }); 
   }
 }

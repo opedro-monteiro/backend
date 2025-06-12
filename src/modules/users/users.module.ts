@@ -1,9 +1,17 @@
+import { PrismaService } from '@database/PrismaService';
+import { IEncrypter } from '@interfaces/cryptography/bcrypt/encrypter.interface';
 import { Module } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { BcryptEncrypter } from 'src/infrastructure/cryptography/bcrypt.encrypter';
 import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
 
 @Module({
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, PrismaService,
+    {
+      provide: IEncrypter,
+      useClass: BcryptEncrypter,
+    }
+  ],
 })
-export class UsersModule {}
+export class UsersModule { }

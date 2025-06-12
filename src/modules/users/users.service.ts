@@ -1,21 +1,30 @@
 import { PrismaService } from '@database/PrismaService';
 import { IEncrypter } from '@interfaces/cryptography/bcrypt/encrypter.interface';
-import { Injectable } from '@nestjs/common';
+import { IUser } from '@interfaces/user/user.interface';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserEntity } from './entities/user.entity';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements IUser {
 
   constructor(
     private readonly prismaService: PrismaService,
     private readonly encrypter: IEncrypter,
   ) { }
 
-  async create(createUserDto: CreateUserDto, tenantId: string) {
+  async create(createUserDto: CreateUserDto, tenantId: string): Promise<UserEntity> {
+    const existingUser = await this.prismaService.usuario.findUnique({
+      where: { email: createUserDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email already in use');
+    }
     const hashedPassword = await this.encrypter.hash(createUserDto.password);
 
-    return this.prismaService.usuario.create({
+    const createdUser = await this.prismaService.usuario.create({
       data: {
         name: createUserDto.name,
         email: createUserDto.email,
@@ -24,21 +33,42 @@ export class UsersService {
         tenantId: tenantId,
       },
     });
+
+    return new UserEntity(createdUser);
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(): Promise<UserEntity[]> {
+    const users = await this.prismaService.usuario.findMany();
+    return users.map(user => new UserEntity(user));
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string): Promise<UserEntity> {
+    const user = await this.prismaService.usuario.findUnique({
+      where: { id: id.toString() }
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return new UserEntity(user);
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+    const user = await this.prismaService.usuario.update({
+      where: { id: id.toString() },
+      data: updateUserDto
+    });
+
+    return new UserEntity(user);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string): Promise<UserEntity> {
+    const user = await this.prismaService.usuario.delete({
+      where: { id: id.toString() }
+    });
+
+    return new UserEntity(user);
   }
+
 }

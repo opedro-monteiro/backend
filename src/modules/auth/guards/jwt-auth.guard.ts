@@ -33,7 +33,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     return canActivatePromise.catch((error) => {
       if (error instanceof UnauthorizedError) {
-        throw new UnauthorizedException(error.message);
+        throw new UnauthorizedException(error.message + "Deu forbiden");
       }
 
       throw new UnauthorizedException();

@@ -1,7 +1,7 @@
 import { PrismaService } from '@database/PrismaService';
 import { IEncrypter } from '@interfaces/cryptography/bcrypt/encrypter.interface';
 import { IUser } from '@interfaces/user/user.interface';
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
@@ -64,6 +64,13 @@ export class UsersService implements IUser {
   }
 
   async remove(id: string): Promise<UserEntity> {
+    const existingUser = await this.prismaService.usuario.findUnique({
+      where: { id },
+    });
+    if (!existingUser) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
     const user = await this.prismaService.usuario.delete({
       where: { id: id.toString() }
     });

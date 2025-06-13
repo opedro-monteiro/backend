@@ -71,3 +71,30 @@ VALOR CRIADO EM CREATE COSTUMER SERVICE {
     clienteId: 'd6cfbf9a-c329-4adc-b5be-32a7c50a7eef'
   }
 }
+
+
+
+| Etapa                               | Tempo Estimado |
+| ----------------------------------- | -------------- |
+| 🏁 Setup inicial (Docker, Prisma)   | 0.5 dia        |
+| 🔐 Auth (JWT + Google OAuth2)       | 1.5 dias       |
+| 🛡️ RBAC e Multitenancy             | 1 dia          |
+| 📇 CRUD Usuários e Clientes         | 1.5 dias       |
+| 🖼️ Frontend com Next.js + Tailwind | 1.5 dias       |
+| 📊 Dashboard (KPIs)                 | 0.5 dia        |
+| 🚢 Dockerização e Deploy            | 1 dia          |
+| 📝 Documentação e testes básicos    | 0.5 dia        |
+
+
+🧮 Total Estimado:
+7 a 8 dias úteis
+
+Se for tempo integral: 4 a 5 dias intensos
+
+📌 Sugestões
+Priorize o core (Auth, Multitenancy, CRUD) nos primeiros 3 dias.
+
+Faça o deploy antes de terminar o frontend por completo (para garantir tempo de ajustes).
+
+Evite diferenciais no início (Microsoft/GitHub login, testes), só se sobrar tempo.
+

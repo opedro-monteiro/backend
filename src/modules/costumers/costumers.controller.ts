@@ -66,7 +66,6 @@ export class CostumersController {
   }
 
   @Delete(':id')
-  @Roles(Role.USER)
   @ApiOperation({ summary: 'Rota para remover cliente' })
   @ApiOkResponse({ type: CostumerResponseDto })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })

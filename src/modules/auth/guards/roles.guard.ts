@@ -19,17 +19,16 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (!requiredRoles || requiredRoles.length === 0) {
-      return true; // Se não tiver roles exigidas, deixa passar
-    }
-
     const request = context.switchToHttp().getRequest<AuthRequest>();
     const user = request.user;
 
-    // Se for ADMIN, permite acesso a tudo
-    if (user.role === Role.ADMIN) {
-      return true;
-    }
+    if (!user) throw new ForbiddenException('Usuário não autenticado.');
+
+    if (user.role === Role.ADMIN) return true;
+
+    // Se a rota não tiver roles definidas, exige ADMIN implicitamente
+    if (!requiredRoles || requiredRoles.length === 0)
+      throw new ForbiddenException('Acesso negado. Apenas ADMIN pode acessar esta rota.');
 
     const hasPermission = requiredRoles.includes(user.role as Role);
 

@@ -57,7 +57,6 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(Role.USER)
   @ApiOperation({ summary: 'Rota para atualizar usuário' })
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({ type: UserResponseDto })
@@ -69,7 +68,6 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles(Role.USER)
   @ApiOperation({ summary: 'Rota para remover usuário' })
   @ApiOkResponse({ type: UserResponseDto })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })

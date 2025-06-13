@@ -1,34 +1,83 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
+import { TenantPresenter } from 'src/presentation/tenant.presenter';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { TenantId } from '../auth/decorators/tenant.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateTenantDto } from './dto/create-tenant.dto';
+import { TenantResponseDto } from './dto/TenantResponseDto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { TenantsService } from './tenants.service';
 
+@ApiTags('Tenants')
 @Controller('tenants')
 export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) { }
 
   @Post()
-  create(@Body() createTenantDto: CreateTenantDto) {
-    return this.tenantsService.create(createTenantDto);
+  @ApiBody({ type: CreateTenantDto })
+  @ApiOkResponse({ type: TenantResponseDto })
+  @ApiOperation({ summary: 'Rota para cadastrar tenant' })
+  @ApiBadRequestResponse({ description: 'Requisição inválida.' })
+  @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createTenantDto: CreateTenantDto) {
+    const tenant = await this.tenantsService.create(createTenantDto);
+    return TenantPresenter.toResponse(tenant);
   }
 
   @Get()
-  findAll() {
-    return this.tenantsService.findAll();
+  @ApiOkResponse({ type: TenantResponseDto, isArray: true })
+  @ApiOperation({ summary: 'Rota para listar todos os tenants' })
+  @ApiBadRequestResponse({ description: 'Requisição inválida.' })
+  @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
+  async findAll() {
+    const tenants = await this.tenantsService.findAll();
+    return TenantPresenter.toManyResponse(tenants);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tenantsService.findOne(id);
+  @ApiOkResponse({ type: TenantResponseDto })
+  @ApiOperation({ summary: 'Rota para buscar tenant por ID' })
+  @ApiBadRequestResponse({ description: 'Requisição inválida.' })
+  @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
+  async findOne(@Param('id') id: string) {
+    const tenant = await this.tenantsService.findOne(id);
+    return TenantPresenter.toResponse(tenant);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTenantDto: UpdateTenantDto) {
-    return this.tenantsService.update(id, updateTenantDto);
+  @ApiBearerAuth()
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBody({ type: UpdateTenantDto })
+  @ApiOkResponse({ type: TenantResponseDto })
+  @ApiOperation({ summary: 'Rota para atualizar tenant' })
+  @ApiBadRequestResponse({ description: 'Requisição inválida.' })
+  @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
+  async update(@Param('id') id: string, @Body() updateTenantDto: UpdateTenantDto, @TenantId() tenantId: string) {
+    if (id !== tenantId)
+      throw new ForbiddenException('Você só pode editar seu próprio tenant.');
+
+    const tenant = await this.tenantsService.update(id, updateTenantDto);
+    return TenantPresenter.toResponse(tenant);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tenantsService.remove(id);
+  @ApiBearerAuth()
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiOkResponse({ type: TenantResponseDto })
+  @ApiOperation({ summary: 'Rota para remover tenant' })
+  @ApiBadRequestResponse({ description: 'Requisição inválida.' })
+  @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
+  async remove(@Param('id') id: string, @TenantId() tenantId: string) {
+    if (id !== tenantId)
+      throw new ForbiddenException('Você só pode excluir seu próprio tenant.');
+
+    const tenant = await this.tenantsService.remove(id);
+    return TenantPresenter.toResponse(tenant);
   }
 }

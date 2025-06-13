@@ -1,16 +1,19 @@
 import { PrismaService } from '@database/PrismaService';
 import { IEncrypter } from '@interfaces/cryptography/bcrypt/encrypter.interface';
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ITenant } from '@interfaces/tenant/tenant.interface';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
+import { TenantEntity } from './entities/tenant.entity';
 
 @Injectable()
-export class TenantsService {
-  constructor(private readonly prismaService: PrismaService,
+export class TenantsService implements ITenant {
+  constructor(
+    private readonly prismaService: PrismaService,
     private readonly encrypter: IEncrypter,
   ) { }
 
-  create(createTenantDto: CreateTenantDto) {
+  async create(createTenantDto: CreateTenantDto): Promise<TenantEntity> {
     return this.prismaService.$transaction(async (tx) => {
       const existingUser = await tx.usuario.findUnique({
         where: { email: createTenantDto.admin.email },
@@ -37,30 +40,45 @@ export class TenantsService {
         }
       });
 
-      return tenant;
-    })
-  }
-
-  findAll() {
-    return this.prismaService.tenant.findMany();
-  }
-
-  findOne(id: string) {
-    return this.prismaService.tenant.findUnique({
-      where: { id }
+      return new TenantEntity(tenant);
     });
   }
 
-  update(id: string, updateTenantDto: UpdateTenantDto) {
-    return this.prismaService.tenant.update({
+  async findAll(): Promise<TenantEntity[]> {
+    const tenants = await this.prismaService.tenant.findMany();
+    return tenants.map(tenant => new TenantEntity(tenant));
+  }
+
+  async findOne(id: string): Promise<TenantEntity> {
+    const tenant = await this.prismaService.tenant.findUnique({
+      where: { id }
+    });
+    if (!tenant) {
+      throw new NotFoundException(`Tenant with id ${id} not found`);
+    }
+    return new TenantEntity(tenant);
+  }
+
+  async update(id: string, updateTenantDto: UpdateTenantDto): Promise<TenantEntity> {
+    const existingTenant = await this.prismaService.tenant.findUnique({ where: { id } })
+
+    if (!existingTenant) throw new NotFoundException(`Tenant with id ${id} not found`);
+
+    const tenant = await this.prismaService.tenant.update({
       where: { id },
       data: updateTenantDto
     });
+    return new TenantEntity(tenant);
   }
 
-  remove(id: string) {
-    return this.prismaService.tenant.delete({
+  async remove(id: string): Promise<TenantEntity> {
+    const existingTenant = await this.prismaService.tenant.findUnique({ where: { id } })
+
+    if (!existingTenant) throw new NotFoundException(`Tenant with id ${id} not found`);
+
+    const tenant = await this.prismaService.tenant.delete({
       where: { id }
     });
+    return new TenantEntity(tenant);
   }
 }

@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { AddressEntity } from 'src/modules/costumers/entities/address.entity';
 import { AddressDto } from './address/address.dto';
 
 export class CostumerResponseDto {

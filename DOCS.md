@@ -98,3 +98,170 @@ Faça o deploy antes de terminar o frontend por completo (para garantir tempo de
 
 Evite diferenciais no início (Microsoft/GitHub login, testes), só se sobrar tempo.
 
+
+
+# 📘 Desafio Técnico: Desenvolvedor Full Stack (NextJS + NestJS)
+
+## 🧠 Objetivo
+
+Avaliar habilidades full stack com foco em:
+
+* **NextJS (Frontend)**
+* **NestJS (Backend)**
+* **TypeScript**, **Node.js**, **Docker**, **JWT**, **RBAC**, **OAuth2**
+
+---
+
+## ✅ Requisitos da Aplicação
+
+### 1. 🔐 Autenticação e Autorização
+
+* Login via:
+
+  * Email/senha (JWT)
+  * Google (OAuth2 – obrigatório)
+  * Microsoft e GitHub (diferenciais)
+* Tokens:
+
+  * JWT + refresh token
+* RBAC (Role-Based Access Control):
+
+  * ADMIN: gerencia usuários e clientes
+  * USER: gerencia apenas clientes, visualiza usuários
+  * GUEST: apenas visualiza clientes
+
+### 2. 🏢 Multitenancy
+
+* Cada tenant identificado por `tenantId`
+* `tenantId` incluído no JWT
+* Isolamento de dados por tenant (clientes, usuários)
+
+### 3. 📇 CRUD de Clientes
+
+* Operações: Criar, Editar, Visualizar, Deletar
+
+* **Modelo Cliente:**
+
+  ```ts
+  id: string (UUID)
+  tenantId: string
+  publicId: string
+  name: string
+  email: string
+  isActive: boolean
+  contact: string
+  address: {
+    street: string
+    neighborhood: string
+    number: string
+    state: string
+  }
+  imageUrl: string
+  createdAt: Date
+  updatedAt: Date
+  ```
+
+* **Modelo Usuário:**
+
+  ```ts
+  id: string (UUID)
+  tenantId: string
+  name: string
+  email: string
+  password: string
+  refreshToken: string
+  role: 'ADMIN' | 'USER' | 'GUEST'
+  createdAt: Date
+  updatedAt: Date
+  ```
+
+### 4. 📊 Dashboard (KPIs)
+
+* Total de clientes registrados
+* Total de clientes ativos
+
+### 5. 🐳 Dockerização
+
+* Dockerfile e docker-compose com:
+
+  * app (backend + frontend)
+  * banco de dados: PostgreSQL ou MySQL
+
+### 6. 📦 Extras / Diferenciais
+
+* Login Microsoft e GitHub (OAuth2)
+* UI com TailwindCSS
+* Testes (unitários, e2e)
+
+---
+
+## 🗂️ Entregáveis
+
+* Repositório no GitHub
+* Instruções de execução claras (README)
+* Documentação da API (Swagger ou Postman)
+* Deploy:
+
+  * Frontend: Vercel
+  * Backend: Render
+* Vídeo de apresentação (opcional)
+
+---
+
+## 🧭 Cronograma Sugerido (7 dias)
+
+| Dia | Etapas                   | Detalhes                                                                                 |
+| --- | ------------------------ | ---------------------------------------------------------------------------------------- |
+| 1   | Setup & Multitenancy     | Projeto NestJS + NextJS + banco PostgreSQL, estrutura multi-tenant via `tenantId` no JWT |
+| 2   | Autenticação JWT         | Login com email/senha, geração e renovação de JWT/refreshToken                           |
+| 3   | OAuth2 com Google        | Login social com Google, uso da biblioteca `passport-google-oauth20`                     |
+| 4   | RBAC                     | Controle de acesso via roles, guards personalizados no NestJS                            |
+| 5   | CRUD Cliente & Dashboard | CRUD completo, filtro por tenant, dashboard com contadores                               |
+| 6   | Frontend NextJS          | Integração com backend, TailwindCSS, páginas de login, dashboard e cliente               |
+| 7   | Docker + Deploy + Docs   | Dockerfile, docker-compose, Swagger/Postman, deploy Vercel + Render                      |
+
+---
+
+## 📚 Guias e Links Úteis
+
+### 🔐 Autenticação e OAuth2
+
+* [NestJS + JWT Auth](https://docs.nestjs.com/security/authentication)
+* [Passport.js Google OAuth](http://www.passportjs.org/packages/passport-google-oauth20/)
+* [JWT com Refresh Token](https://dev.to/kingisaac95/refresh-token-in-nestjs-1c4n)
+
+### 🔐 RBAC
+
+* [RBAC com Guards no NestJS](https://docs.nestjs.com/guards#role-based-authorization)
+
+### 🏢 Multitenancy
+
+* [Multitenancy com Prisma](https://www.prisma.io/docs/guides/other/multitenancy)
+* [NestJS Multi-tenant Strategies](https://dev.to/nestjs/multi-tenancy-in-nestjs-1c8e)
+
+### 🐳 Docker
+
+* [Dockerizando app Node/NestJS](https://docs.nestjs.com/recipes/docker)
+* [Docker Compose com PostgreSQL](https://docs.docker.com/compose/)
+
+### ☁️ Deploy
+
+* [Vercel (NextJS)](https://vercel.com/docs)
+* [Render (NestJS)](https://render.com/docs/deploy-node-express-app)
+
+### 🔧 Outras libs úteis
+
+* `class-validator`, `passport`, `@nestjs/passport`, `@nestjs/jwt`
+* `prisma`, `@prisma/client`, `bcrypt`, `multer`, `zod`
+
+---
+
+## 🧠 Dicas Finais
+
+* Comece validando toda a estrutura multi-tenant e RBAC.
+* Mantenha os tokens seguros e válidos com refresh.
+* Use DTOs e interceptors para isolar tenants.
+* Priorize o funcionamento completo antes dos diferenciais.
+* Mantenha commits pequenos e com mensagens claras.
+
+---

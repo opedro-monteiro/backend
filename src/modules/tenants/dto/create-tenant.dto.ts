@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 
@@ -18,6 +18,7 @@ class AdminUserDto {
     @IsNotEmpty()
     password: string;
 }
+export class PartialAdminUserDto extends PartialType(AdminUserDto) { }
 
 export class CreateTenantDto {
     @ApiProperty({

@@ -37,8 +37,8 @@ export class CostumersController {
   @ApiOkResponse({ type: CostumerResponseDto, isArray: true })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })
   @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
-  async findAll() {
-    const costumers = await this.costumersService.findAll();
+  async findAll(@TenantId() tenantId: string) {
+    const costumers = await this.costumersService.findAll(tenantId);
     return CostumerPresenter.toManyResponse(costumers);
   }
 
@@ -48,8 +48,8 @@ export class CostumersController {
   @ApiOkResponse({ type: CostumerResponseDto })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })
   @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
-  async findOne(@Param('id') id: string) {
-    const costumer = await this.costumersService.findOne(id);
+  async findOne(@Param('id') id: string, @TenantId() tenantId: string) {
+    const costumer = await this.costumersService.findOne(id, tenantId);
     return CostumerPresenter.toResponse(costumer);
   }
 
@@ -60,8 +60,8 @@ export class CostumersController {
   @ApiOkResponse({ type: CostumerResponseDto })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })
   @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
-  async update(@Param('id') id: string, @Body() updateCostumerDto: UpdateCostumerDto) {
-    const costumer = await this.costumersService.update(id, updateCostumerDto);
+  async update(@Param('id') id: string, @Body() updateCostumerDto: UpdateCostumerDto, @TenantId() tenantId: string) {
+    const costumer = await this.costumersService.update(id, tenantId, updateCostumerDto);
     return CostumerPresenter.toResponse(costumer);
   }
 
@@ -70,8 +70,8 @@ export class CostumersController {
   @ApiOkResponse({ type: CostumerResponseDto })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })
   @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
-  async remove(@Param('id') id: string) {
-    const costumer = await this.costumersService.remove(id);
+  async remove(@Param('id') id: string, @TenantId() tenantId: string) {
+    const costumer = await this.costumersService.remove(id, tenantId);
     return CostumerPresenter.toResponse(costumer);
   }
 }

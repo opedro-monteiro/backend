@@ -52,16 +52,17 @@ export class CostumersService implements ICostumer {
     return new CostumerEntity(createdCostumer);
   }
 
-  async findAll(): Promise<CostumerEntity[]> {
+  async findAll(tenantId: string): Promise<CostumerEntity[]> {
     const costumers = await this.prismaService.cliente.findMany({
+      where: { tenantId },
       include: { address: true },
     });
     return costumers.map((costumer) => new CostumerEntity(costumer));
   }
 
-  async findOne(id: string): Promise<CostumerEntity> {
+  async findOne(id: string, tenantId: string): Promise<CostumerEntity> {
     const costumer = await this.prismaService.cliente.findUnique({
-      where: { id },
+      where: { id, tenantId },
       include: { address: true },
     });
     if (!costumer) {
@@ -70,9 +71,9 @@ export class CostumersService implements ICostumer {
     return new CostumerEntity(costumer);
   }
 
-  async update(id: string, updateCostumerDto: UpdateCostumerDto): Promise<CostumerEntity> {
+  async update(id: string, tenantId: string, updateCostumerDto: UpdateCostumerDto): Promise<CostumerEntity> {
     const existingCostumer = await this.prismaService.cliente.findUnique({
-      where: { id },
+      where: { id, tenantId },
       include: { address: true },
     });
 
@@ -107,9 +108,9 @@ export class CostumersService implements ICostumer {
   }
 
 
-  async remove(id: string): Promise<CostumerEntity> {
+  async remove(id: string, tenantId: string): Promise<CostumerEntity> {
     const existingCostumer = await this.prismaService.cliente.findUnique({
-      where: { id },
+      where: { id, tenantId },
       include: { address: true },
     });
     if (!existingCostumer) {

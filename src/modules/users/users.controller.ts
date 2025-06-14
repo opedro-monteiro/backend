@@ -4,16 +4,16 @@ import {
   ApiInternalServerErrorResponse,
   ApiOkResponse, ApiOperation, ApiTags
 } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { UserPresenter } from 'src/presentation/user.presenter';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { TenantId } from '../auth/decorators/tenant.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/response-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles/roles.guard';
+import { Role } from '../auth/enums/role.enum';
 
 @ApiTags('Usuarios')
 @ApiBearerAuth()

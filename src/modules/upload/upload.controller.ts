@@ -19,11 +19,11 @@ import {
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger';
-import { IsPublic } from '../auth/decorators/is-public.decorator';
 import { DeleteOneFileDto } from './dto/delete-one-file.dto';
 import { ResponseDeleteOneFileDto } from './dto/response-delete-one-file.dto';
 import { ResponseOneFileDto } from './dto/response-one-file.dto';
 import { UploadService } from './upload.service';
+import { IsPublic } from '../auth/decorators/public.decorator';
 
 @ApiTags('Upload de arquivos')
 @Controller()

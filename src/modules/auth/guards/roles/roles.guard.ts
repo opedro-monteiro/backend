@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from '@prisma/client';
-import { ROLES_KEY } from '../decorators/roles.decorator';
-import { AuthRequest } from '../models/AuthRequest';
+import { ROLES_KEY } from '../../decorators/roles.decorator';
+import { IS_PUBLIC_KEY } from '../../decorators/public.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -19,9 +19,17 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    const request = context.switchToHttp().getRequest<AuthRequest>();
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
+    
+    const request = context.switchToHttp().getRequest();
+    console.log("@RolesGuard - canActivate - request:", request);
     const user = request.user;
-
+    console.log("@RolesGuard - canActivate - user:", user);
+    
     if (!user) throw new ForbiddenException('Usuário não autenticado.');
 
     if (user.role === Role.ADMIN) return true;

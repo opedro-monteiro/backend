@@ -1,15 +1,16 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { CostumerPresenter } from 'src/presentation/costumer.presenter';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { TenantId } from '../auth/decorators/tenant.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
+
 import { CostumersService } from './costumers.service';
 import { CreateCostumerDto } from './dto/create-costumer.dto';
 import { CostumerResponseDto } from './dto/response-costumer.dto';
 import { UpdateCostumerDto } from './dto/update-costumer.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
+import { Role } from '../auth/enums/role.enum';
+import { RolesGuard } from '../auth/guards/roles/roles.guard';
 
 @ApiTags('Clientes')
 @ApiBearerAuth()

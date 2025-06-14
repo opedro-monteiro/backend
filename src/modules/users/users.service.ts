@@ -54,6 +54,26 @@ export class UsersService implements IUser {
     return new UserEntity(user);
   }
 
+  async findByEmail(email: string): Promise<UserEntity | null> {
+    console.log("Email to find:", email);
+    const user = await this.prismaService.usuario.findUnique({
+      where: { email },
+    })
+
+    return user ? new UserEntity(user) : null;
+  }
+
+  async updateHashedRefreshToken(userId: string, hashedRefreshToken: string): Promise<UserEntity> {
+    const user = await this.prismaService.usuario.update({
+      where: { id: userId },
+      data: {
+        refreshToken: hashedRefreshToken
+      }
+    })
+
+    return new UserEntity(user);
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
     const user = await this.prismaService.usuario.update({
       where: { id: id.toString() },

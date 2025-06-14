@@ -1,45 +1,55 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
-  ApiBody,
-  ApiInternalServerErrorResponse,
-  ApiOkResponse,
-  ApiOperation
-} from '@nestjs/swagger';
-import { AuthPresenter } from 'src/presentation/auth.presenter';
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { IsPublic } from './decorators/is-public.decorator';
-import { LoginUserDto } from './dto/login-user.dto';
-import { ResponseLoginDto } from './dto/response-login.dto';
-import { GoogleAuthGuard } from './guards/google-oauth.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-@Controller()
-export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+import { IsPublic } from './decorators/public.decorator';
+import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth/local-auth.guard';
+import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
 
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
   @IsPublic()
-  @Post('login')
-  @ApiOperation({ summary: 'Rota para login de usuários.' })
-  @ApiBody({ type: LoginUserDto })
-  @ApiOkResponse({ type: ResponseLoginDto })
   @HttpCode(HttpStatus.OK)
-  @ApiBadRequestResponse({ description: 'Requisição inválida.' })
-  @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
-  @UseGuards(JwtAuthGuard)
-  async login(@Body() credentials: LoginUserDto) {
-    const tokenData = await this.authService.login(credentials);
-    return AuthPresenter.toResponse(tokenData);
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  async login(@Request() req) {
+    return this.authService.login(req.user.id);
   }
 
+  @UseGuards(RefreshAuthGuard)
+  @Post('refresh')
+  refreshToken(@Req() req) {
+    return this.authService.refreshToken(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('signout')
+  signOut(@Req() req) {
+    this.authService.signOut(req.user.id);
+  }
+
+  @IsPublic()
   @UseGuards(GoogleAuthGuard)
   @Get('google/login')
-  googleLogin() { }
+  googleLogin() {}
 
+  @IsPublic()
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
+    console.log("#Google callback called with user:", req.user);
     const response = await this.authService.login(req.user.id);
-    res.redirect(`http://localhost:3333?token=${response.token}`);
+    res.redirect(`http://localhost:5173?token=${response.accessToken}`);
   }
-
 }

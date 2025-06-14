@@ -1,60 +1,55 @@
 import { IEncrypter } from '@interfaces/cryptography/bcrypt/encrypter.interface';
-import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Usuario } from '@prisma/client';
-import refreshJwtConfig from 'src/configs/refresh-jwt.config';
-import { LoginService } from '../login/login.service';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UsersService } from '../users/users.service';
 import { PrismaService } from './../../database/PrismaService';
-import { LoginUserDto } from './dto/login-user.dto';
-import { UserPayload } from './models/UserPayload';
-import { UserToken } from './models/UserToken';
+import refreshJwtConfig from './config/refresh-jwt.config';
 import { AuthJwtPayload } from './types/auth-jwtPayload';
-
+import { CurrentUser } from './types/current-user';
+import { GoogleProfile } from './types/google-user';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly loginService: LoginService,
-    private readonly prismaService: PrismaService,
-    private readonly jwtService: JwtService,
-    private readonly encrypter: IEncrypter,
-
+    private PrismaService: PrismaService,
+    private jwtService: JwtService,
+    private encrypter: IEncrypter,
+    private userService: UsersService,
     @Inject(refreshJwtConfig.KEY)
-    private refreshTokenConfig: ConfigType<typeof refreshJwtConfig>
+    private refreshTokenConfig: ConfigType<typeof refreshJwtConfig>,
   ) { }
 
-  async login(usuarioArg: LoginUserDto): Promise<UserToken> {
-    const user = await this.validateUser(usuarioArg.email, usuarioArg.password);
+  async validateUser(email: string, password: string) {
+    const user = await this.PrismaService.usuario.findUnique({
+      where: { email }
+    })
+    if (!user) throw new UnauthorizedException('Usuário não encontrado!');
 
-    const payload: UserPayload = {
-      id: user.id,
-      role: user.role,
-      email: user.email,
-      tenantId: user.tenantId,
-    };
+    const isPasswordMatch = await this.encrypter.compare(password, user.password);
+    if (!isPasswordMatch)
+      throw new UnauthorizedException('Credenciais inválidas!');
 
-    const token: string = this.jwtService.sign(payload);
-
-    return { token, id: user.id, role: user.role };
+    return { id: user.id };
   }
 
-  async validateUser(email: string, password: string): Promise<Usuario> {
-    const usuario = await this.loginService.findByEmail(email);
-    if (!usuario) throw new NotFoundException('Usuário não encontrado.');
+  async login(userId: string) {
+    // const payload: AuthJwtPayload = { sub: userId };
+    // const token = this.jwtService.sign(payload);
+    // const refreshToken = this.jwtService.sign(payload, this.refreshTokenConfig);
+    const { accessToken, refreshToken } = await this.generateTokens(userId);
+    const hashedRefreshToken = await this.encrypter.hash(refreshToken);
 
-    const isPasswordValid: boolean = await this.encrypter.compare(password, usuario.password);
-    if (!isPasswordValid) throw new UnauthorizedException("Senha inválida.");
-
+    await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
     return {
-      ...usuario,
-      password: "",
-    }
+      id: userId,
+      accessToken,
+      refreshToken,
+    };
   }
 
   async generateTokens(userId: string) {
-    const payload: AuthJwtPayload = { sub: userId };
+    const payload: AuthJwtPayload = { sub: userId, tenantId: "", role: "ADMIN" };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(payload, this.refreshTokenConfig),
@@ -68,7 +63,7 @@ export class AuthService {
   async refreshToken(userId: string) {
     const { accessToken, refreshToken } = await this.generateTokens(userId);
     const hashedRefreshToken = await this.encrypter.hash(refreshToken);
-    await this.loginService.updateHashedRefreshToken(userId, hashedRefreshToken);
+    await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
     return {
       id: userId,
       accessToken,
@@ -76,34 +71,13 @@ export class AuthService {
     };
   }
 
-  googleLogin(req: any) {
-    throw new Error('Method not implemented.');
-  }
-
-  async validateGoogleUser(googleUser: CreateUserDto) {
-    const user = await this.prismaService.usuario.findUnique({
-      where: { email: googleUser.email },
-    });
-    if (user) return user;
-
-    return await this.prismaService.usuario.create({
-      data: {
-        name: googleUser.name,
-        email: googleUser.email,
-        password: '',
-        role: 'USER',
-        tenantId: '',
-      },
-    })
-  }
-
-  async validateRefreshToken(userId: number, refreshToken: string) {
+  async validateRefreshToken(userId: string, refreshToken: string) {
     const user = await this.userService.findOne(userId);
-    if (!user || !user.hashedRefreshToken)
+    if (!user || !user.refreshToken)
       throw new UnauthorizedException('Invalid Refresh Token');
 
-    const refreshTokenMatches = await argon2.verify(
-      user.hashedRefreshToken,
+    const refreshTokenMatches = await this.encrypter.compare(
+      user.refreshToken,
       refreshToken,
     );
     if (!refreshTokenMatches)
@@ -112,4 +86,32 @@ export class AuthService {
     return { id: userId };
   }
 
+  async signOut(userId: string) {
+    await this.userService.updateHashedRefreshToken(userId, "");
+  }
+
+  async validateJwtUser(userId: string) {
+    const user = await this.userService.findOne(userId);
+    if (!user) throw new UnauthorizedException('User not found!');
+    const currentUser: CurrentUser = { id: user.id, role: user.role };
+    return currentUser;
+  }
+
+  async validateGoogleUser(googleUser: GoogleProfile) {
+    console.log("@validateGoogleUser called with:", googleUser);
+    console.log("@validateGoogleUser - Email:", googleUser.emails[0].value);
+
+    const user = await this.userService.findByEmail(googleUser.emails[0].value);
+    if (user) return user;
+
+    return await this.PrismaService.usuario.create({
+      data: {
+        name: googleUser.displayName,
+        email: googleUser.emails[0].value,
+        role: 'ADMIN',
+        password: "",
+        tenantId: googleUser.id,
+      }
+    });
+  }
 }

@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { TenantPresenter } from 'src/presentation/tenant.presenter';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { TenantId } from '../auth/decorators/tenant.decorator';
 import { UserId } from '../auth/decorators/user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { Role } from '../auth/enums/role.enum';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { TenantResponseDto } from './dto/TenantResponseDto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';

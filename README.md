@@ -275,6 +275,15 @@ O payload do JWT inclui o `tenantId` para identificar o tenant do usuário.
 
 ---
 
+## 📸 Imagens
+
+![Homepage](/assets/homepage.png)
+![Create Organization](/assets/create-org.png)
+![Login](/assets/login.png)
+![Dashboard](/assets/dashboard.png)
+![Register Customer](/assets/register-costumer.png)
+---
+
 ## 📞 Contato
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?style=for-the-badge\&logo=linkedin\&logoColor=white)](https://www.linkedin.com/in/opedro-monteiro/)

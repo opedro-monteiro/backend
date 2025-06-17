@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private authService: AuthService,
   ) {
 
-    if(!jwtConfiguration.secret) throw new Error("JWT secret is not defined in the configuration. Please check your JWT configuration.");
+    if (!jwtConfiguration.secret) throw new Error("JWT secret is not defined in the configuration. Please check your JWT configuration.");
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -24,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: AuthJwtPayload) {
-    const userId = payload.sub;
+    const userId = payload.id;
     return this.authService.validateJwtUser(userId);
   }
 }

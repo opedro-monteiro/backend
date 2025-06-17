@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TenantPresenter } from 'src/presentation/tenant.presenter';
+import { IsPublic } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { TenantId } from '../auth/decorators/tenant.decorator';
 import { UserId } from '../auth/decorators/user.decorator';
@@ -20,14 +21,15 @@ export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) { }
 
   @Post()
+  @IsPublic()
   @ApiBody({ type: CreateTenantDto })
   @ApiOkResponse({ type: TenantResponseDto })
   @ApiOperation({ summary: 'Rota para cadastrar tenant' })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })
   @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createTenantDto: CreateTenantDto, @UserId() userId: string) {
-    const tenant = await this.tenantsService.create(createTenantDto, userId);
+  async create(@Body() createTenantDto: CreateTenantDto) {
+    const tenant = await this.tenantsService.create(createTenantDto);
     return TenantPresenter.toResponse(tenant);
   }
 

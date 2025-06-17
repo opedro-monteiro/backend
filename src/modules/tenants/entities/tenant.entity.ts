@@ -1,4 +1,4 @@
-import { Cliente, Tenant, Usuario } from "@prisma/client"
+import { Tenant } from "@prisma/client"
 
 export class TenantEntity {
     id: String

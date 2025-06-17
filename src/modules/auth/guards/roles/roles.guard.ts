@@ -26,9 +26,7 @@ export class RolesGuard implements CanActivate {
     if (isPublic) return true;
     
     const request = context.switchToHttp().getRequest();
-    console.log("@RolesGuard - canActivate - request:", request);
     const user = request.user;
-    console.log("@RolesGuard - canActivate - user:", user);
     
     if (!user) throw new ForbiddenException('Usuário não autenticado.');
 

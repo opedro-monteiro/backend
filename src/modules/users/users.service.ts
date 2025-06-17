@@ -16,12 +16,13 @@ export class UsersService implements IUser {
 
   async create(createUserDto: CreateUserDto, tenantId: string): Promise<UserEntity> {
     const existingUser = await this.prismaService.usuario.findUnique({
-      where: { email: createUserDto.email },
+      where: { email: createUserDto.email, tenantId: tenantId },
     });
 
     if (existingUser) {
       throw new ConflictException('Email already in use');
     }
+
     const hashedPassword = await this.encrypter.hash(createUserDto.password);
 
     const createdUser = await this.prismaService.usuario.create({
@@ -29,7 +30,7 @@ export class UsersService implements IUser {
         name: createUserDto.name,
         email: createUserDto.email,
         password: hashedPassword,
-        role: createUserDto.role || 'USER',
+        role: createUserDto.role,
         tenantId: tenantId,
       },
     });
@@ -37,14 +38,18 @@ export class UsersService implements IUser {
     return new UserEntity(createdUser);
   }
 
-  async findAll(): Promise<UserEntity[]> {
-    const users = await this.prismaService.usuario.findMany();
+  async findAll(tenantId: string): Promise<UserEntity[]> {
+    const users = await this.prismaService.usuario.findMany({
+      where: {
+        tenantId: tenantId,
+      }
+    });
     return users.map(user => new UserEntity(user));
   }
 
   async findOne(id: string): Promise<UserEntity> {
     const user = await this.prismaService.usuario.findUnique({
-      where: { id: id.toString() }
+      where: { id }
     });
 
     if (!user) {
@@ -55,7 +60,6 @@ export class UsersService implements IUser {
   }
 
   async findByEmail(email: string): Promise<UserEntity | null> {
-    console.log("Email to find:", email);
     const user = await this.prismaService.usuario.findUnique({
       where: { email },
     })
@@ -74,7 +78,7 @@ export class UsersService implements IUser {
     return new UserEntity(user);
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+  async update(id: string, updateUserDto: UpdateUserDto, tenantId: string): Promise<UserEntity> {
     const user = await this.prismaService.usuario.update({
       where: { id: id.toString() },
       data: updateUserDto
@@ -83,7 +87,7 @@ export class UsersService implements IUser {
     return new UserEntity(user);
   }
 
-  async remove(id: string): Promise<UserEntity> {
+  async remove(id: string, tenantId: string): Promise<UserEntity> {
     const existingUser = await this.prismaService.usuario.findUnique({
       where: { id },
     });

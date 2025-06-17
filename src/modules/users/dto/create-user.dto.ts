@@ -34,5 +34,5 @@ export class CreateUserDto {
     })
     @IsEnum(['ADMIN', 'USER', 'GUEST'])
     @IsOptional()
-    role?: 'ADMIN' | 'USER' | 'GUEST';
+    role: 'ADMIN' | 'USER' | 'GUEST';
 }

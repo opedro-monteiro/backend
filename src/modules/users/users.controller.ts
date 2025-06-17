@@ -7,13 +7,13 @@ import {
 import { UserPresenter } from 'src/presentation/user.presenter';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { TenantId } from '../auth/decorators/tenant.decorator';
+import { Role } from '../auth/enums/role.enum';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/response-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles/roles.guard';
-import { Role } from '../auth/enums/role.enum';
 
 @ApiTags('Usuarios')
 @ApiBearerAuth()
@@ -40,8 +40,8 @@ export class UsersController {
   @ApiOkResponse({ type: UserResponseDto, isArray: true })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })
   @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
-  async findAll() {
-    const users = await this.usersService.findAll();
+  async findAll(@TenantId() tenantId: string) {
+    const users = await this.usersService.findAll(tenantId);
     return UserPresenter.toManyResponse(users);
   }
 
@@ -62,8 +62,8 @@ export class UsersController {
   @ApiOkResponse({ type: UserResponseDto })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })
   @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    const user = await this.usersService.update(id, updateUserDto);
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @TenantId() tenantId: string) {
+    const user = await this.usersService.update(id, updateUserDto, tenantId);
     return UserPresenter.toResponse(user)
   }
 
@@ -72,8 +72,8 @@ export class UsersController {
   @ApiOkResponse({ type: UserResponseDto })
   @ApiBadRequestResponse({ description: 'Requisição inválida.' })
   @ApiInternalServerErrorResponse({ description: 'Erro interno no servidor.' })
-  async remove(@Param('id') id: string) {
-    const user = await this.usersService.remove(id);
+  async remove(@Param('id') id: string, @TenantId() tenantId: string) {
+    const user = await this.usersService.remove(id, tenantId);
     return UserPresenter.toResponse(user)
   }
 }

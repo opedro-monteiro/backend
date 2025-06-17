@@ -4,7 +4,7 @@ CREATE TYPE "Role" AS ENUM ('ADMIN', 'USER', 'GUEST');
 -- CreateTable
 CREATE TABLE "Cliente" (
     "id" TEXT NOT NULL,
-    "tenantId" TEXT NOT NULL,
+    "tenantId" TEXT,
     "publicId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE "Cliente" (
 -- CreateTable
 CREATE TABLE "Usuario" (
     "id" TEXT NOT NULL,
-    "tenantId" TEXT NOT NULL,
+    "tenantId" TEXT,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE "Usuario" (
 );
 
 -- CreateTable
-CREATE TABLE "Address" (
+CREATE TABLE "Endereco" (
     "id" TEXT NOT NULL,
     "street" TEXT NOT NULL,
     "neighborhood" TEXT NOT NULL,
@@ -41,11 +41,16 @@ CREATE TABLE "Address" (
     "state" TEXT NOT NULL,
     "clienteId" TEXT NOT NULL,
 
-    CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Endereco_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "Cliente_publicId_key" ON "Cliente"("publicId");
+-- CreateTable
+CREATE TABLE "Tenant" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Tenant_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Cliente_email_key" ON "Cliente"("email");
@@ -54,13 +59,22 @@ CREATE UNIQUE INDEX "Cliente_email_key" ON "Cliente"("email");
 CREATE INDEX "Cliente_tenantId_idx" ON "Cliente"("tenantId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Cliente_tenantId_publicId_key" ON "Cliente"("tenantId", "publicId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Usuario_email_key" ON "Usuario"("email");
 
 -- CreateIndex
 CREATE INDEX "Usuario_tenantId_idx" ON "Usuario"("tenantId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Address_clienteId_key" ON "Address"("clienteId");
+CREATE UNIQUE INDEX "Endereco_clienteId_key" ON "Endereco"("clienteId");
 
 -- AddForeignKey
-ALTER TABLE "Address" ADD CONSTRAINT "Address_clienteId_fkey" FOREIGN KEY ("clienteId") REFERENCES "Cliente"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Cliente" ADD CONSTRAINT "Cliente_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Usuario" ADD CONSTRAINT "Usuario_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Endereco" ADD CONSTRAINT "Endereco_clienteId_fkey" FOREIGN KEY ("clienteId") REFERENCES "Cliente"("id") ON DELETE CASCADE ON UPDATE CASCADE;

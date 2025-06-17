@@ -7,22 +7,26 @@ import { swaggerConfig } from './configs/swagger.config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('/v1');
-  app.enableCors()
+
+  app.enableCors({
+    origin: 'http://localhost:3000', // trocar para o da PROD
+    credentials: true, // permite enviar cookies, auth headers, etc.
+  })
 
   // Pipes and Interceptors
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // remove propriedades não definidas no DTO
-      forbidNonWhitelisted: true, // lança erro se houver propriedades extras
-      transform: true, // transforma payloads em instâncias dos DTOs
+      whitelist: true, 
+      forbidNonWhitelisted: true, 
+      transform: true, 
     }),
   );
 
   //  Interceptors
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector), {
-      strategy: 'excludeAll', // Por padrão, exclui todos a menos que marcados com @Expose()
-      excludeExtraneousValues: true, // Remove campos não definidos no DTO
+      strategy: 'excludeAll', 
+      excludeExtraneousValues: true, 
     })
   );
 
